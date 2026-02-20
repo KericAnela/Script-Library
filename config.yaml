@@ -1,0 +1,13 @@
+search:
+  extensions:
+    - .py
+    - .pyw
+    - .ipynb
+  ignore_folders:
+    - .git
+    - __pycache__
+    - .venv
+    - env
+    - node_modules
+  ignore_files:
+    - "main_part.py"
