@@ -4,23 +4,34 @@ import platform
 import os
 import yaml
 
-def get_target_directory():
-    print("1. Scan current folder (and subfolders)")
-    print("2. Scan a specific custom path")
-    print("3. Scan entire computer (WARNING: Slow/Requires Permissions)")
-    
-    choice = input("Select an option (1-3): ")
+from pathlib import Path
+import os
 
-    if choice == '1':
-        return Path.cwd()
-    elif choice == '2':
-        custom_path = input("Enter the full path: ").strip().strip('"')
-        return Path(custom_path)
-    elif choice == '3':
-        return Path(os.path.abspath(os.sep))
-    
-    print("Invalid choice, defaulting to current folder.")
-    return Path.cwd()
+def get_target_directory():
+    while True:
+        print("\n--- Directory Selection ---")
+        print("1. Scan current folder (and subfolders)")
+        print("2. Scan a specific custom path")
+        print("3. Scan entire computer (WARNING: Slow/Requires Permissions)")
+        
+        choice = input("Select an option (1-3): ").strip()
+
+        if choice == '1':
+            return Path.cwd()
+        
+        elif choice == '2':
+            custom_path = input("Enter the full path: ").strip().strip('"')
+            path_obj = Path(custom_path)
+            if path_obj.exists():
+                return path_obj
+            else:
+                print(f"Error: The path '{custom_path}' does not exist. Please try again.")
+        
+        elif choice == '3':
+            return Path(os.path.abspath(os.sep))
+        
+        else:
+            print("Invalid selection. Please enter 1, 2, or 3.")
 
 def load_config():
     config_path = Path(__file__).parent / "config.yaml"
@@ -60,6 +71,8 @@ def find_python_scripts(base_path, config):
     except PermissionError:
         print("Permission denied in some directories.")
         return found_files
+    except OSError as e:
+        print(f"System error accessing {base_path}: {e}")
 
 def launch_script(selected_script):
     script_path = str(selected_script.absolute())
