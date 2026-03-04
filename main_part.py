@@ -4,12 +4,15 @@ import platform
 import os
 import yaml
 
-from pathlib import Path
-import os
+def clear_screen():
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 def get_target_directory():
     while True:
-        print("\n--- Directory Selection ---")
+        print("Directory Selection:")
         print("1. Scan current folder (and subfolders)")
         print("2. Scan a specific custom path")
         print("3. Scan entire computer (WARNING: Slow/Requires Permissions)")
@@ -20,17 +23,26 @@ def get_target_directory():
             return Path.cwd()
         
         elif choice == '2':
-            custom_path = input("Enter the full path: ").strip().strip('"')
+            custom_path = input("Enter the full path (or 0 to go back): ").strip().strip('"')
+            
+            if custom_path == '0':
+                clear_screen()
+                continue 
+            
             path_obj = Path(custom_path)
-            if path_obj.exists():
+            if path_obj.exists() and path_obj.is_dir():
+                clear_screen()
                 return path_obj
             else:
                 print(f"Error: The path '{custom_path}' does not exist. Please try again.")
+                clear_screen()
         
         elif choice == '3':
+            clear_screen()
             return Path(os.path.abspath(os.sep))
         
         else:
+            clear_screen()
             print("Invalid selection. Please enter 1, 2, or 3.")
 
 def load_config():
@@ -48,24 +60,30 @@ def load_config():
         return yaml.safe_load(f)
 
 def find_python_scripts(base_path, config):
-    search_cfg = config.get("search", {})
-    extensions = set(search_cfg.get("extensions", [".py"]))
-    ignore_folders = set(search_cfg.get("ignore_folders", []))
-    ignore_files = set(search_cfg.get("ignore_files", []))
-
-    found_files = []
-    
     try:
-        for path in base_path.rglob("*"):
-            if not path.is_file():
-                continue
-            
-            if any(folder in path.parts for folder in ignore_folders):
-                continue
-                
-            if path.suffix.lower() in extensions and path.name not in ignore_files:
-                found_files.append(path)
-                
+        search_cfg = config.get("search", {})
+        extensions = tuple(search_cfg.get("extensions", [".py"]))
+        ignore_folders = set(search_cfg.get("ignore_folders", []))
+        ignore_files = set(search_cfg.get("ignore_files", []))
+
+        found_files = []
+        
+        print("Scanning, this may take a moment...")
+
+        for root, dirs, files in os.walk(str(base_path)):
+            dirs[:] = [d for d in dirs if d not in ignore_folders and not d.startswith('.')]
+
+            for file in files:
+                if file.endswith(extensions) and file not in ignore_files:
+                    full_path = Path(root) / file
+                    found_files.append(full_path)
+                    
+                    if len(found_files) % 50 == 0: # there is an error with this all of a sudden
+                        print(f"\nFound {len(found_files)} scripts so far...", end='\r')
+
+        clear_screen()
+        
+        print(f"Search complete. Found {len(found_files)} files in total.")
         return found_files
 
     except PermissionError:
@@ -82,19 +100,23 @@ def launch_script(selected_script):
     print(f"Launching: {selected_script.name}...\n")
 
     if current_os == "Windows":
-        subprocess.Popen(['start', 'cmd', '/K', 'python', script_path], 
-                         cwd=script_dir, shell=True)
+        subprocess.Popen(f'start cmd /K python "{script_path}"', cwd=script_dir, shell=True)
     elif current_os == "Darwin":  # macOS
         cmd = f'tell application "Terminal" to do script "python3 \'{script_path}\'"'
         subprocess.Popen(['osascript', '-e', cmd])
     else:  # Linux
-        subprocess.Popen(['x-terminal-emulator', '-e', 'python3', script_path], 
-                         cwd=script_dir)
+        subprocess.Popen(['x-terminal-emulator', '-e', 'python3', script_path], cwd=script_dir)
 
 def main():
+    clear_screen()
+
     config = load_config()
     base_path = get_target_directory()
     
+    if base_path is None:
+        return
+    
+    clear_screen()
     if not base_path.exists() or not base_path.is_dir():
         print(f"Error: '{base_path}' is not a valid directory.")
         return
@@ -102,20 +124,23 @@ def main():
     python_files = find_python_scripts(base_path, config)
 
     if not python_files:
-        print("No Python scripts found.")
+        print(f"\nNo Python scripts found in {base_path}")
         return
-
+    
     for index, file_path in enumerate(python_files, 1):
-        print(f"{index}. {file_path.name} (in {file_path.parent.name})")
-
+        print(f"{index:3}. {file_path.name:<30} inside of {file_path.parent.name}.")
+    
     try:
-        user_input = input("\nEnter the number to run (0 to exit): ")
+        user_input = input("\nEnter the number to run (or 0 to exit): ")
+        if not user_input.strip():
+            return
+            
         choice = int(user_input)
         
         if 1 <= choice <= len(python_files):
             launch_script(python_files[choice - 1])
         elif choice == 0:
-            print("Exiting.")
+            print("Now exiting...")
         else:
             print("Invalid selection.")
             
