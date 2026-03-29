@@ -3,6 +3,7 @@ import subprocess
 import platform
 import os
 import yaml
+import sys
 
 def clear_screen():
     if os.name == 'nt':
@@ -77,9 +78,10 @@ def find_python_scripts(base_path, config):
                 if file.endswith(extensions) and file not in ignore_files:
                     full_path = Path(root) / file
                     found_files.append(full_path)
-                    
-                    if len(found_files) % 50 == 0: # there is an error with this all of a sudden
-                        print(f"\nFound {len(found_files)} scripts so far...", end='\r')
+
+                if len(found_files) % 50 == 0:
+                    sys.stdout.write(f"\rFound {len(found_files)} scripts so far...")
+                    sys.stdout.flush()
 
         clear_screen()
         
@@ -101,10 +103,10 @@ def launch_script(selected_script):
 
     if current_os == "Windows":
         subprocess.Popen(f'start cmd /K python "{script_path}"', cwd=script_dir, shell=True)
-    elif current_os == "Darwin":  # macOS
+    elif current_os == "Darwin":
         cmd = f'tell application "Terminal" to do script "python3 \'{script_path}\'"'
         subprocess.Popen(['osascript', '-e', cmd])
-    else:  # Linux
+    else:
         subprocess.Popen(['x-terminal-emulator', '-e', 'python3', script_path], cwd=script_dir)
 
 def main():
