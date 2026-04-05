@@ -7,9 +7,9 @@ import sys
 
 def clear_screen():
     if os.name == 'nt':
-        os.system('cls')
+        subprocess.run("cls", shell=True)
     else:
-        os.system('clear')
+        subprocess.run("clear", shell=True)
 
 def get_target_directory():
     while True:
@@ -130,7 +130,7 @@ def main():
         return
     
     for index, file_path in enumerate(python_files, 1):
-        print(f"{index:3}. {file_path.name:<30} inside of {file_path.parent.name}.")
+        print(f"{index:3}. {file_path.name:<30}      inside of {file_path.parent.name}.")
     
     try:
         user_input = input("\nEnter the number to run (or 0 to exit): ")

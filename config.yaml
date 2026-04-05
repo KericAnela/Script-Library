@@ -19,3 +19,5 @@ search:
     - .ipynb_checkpoints
   ignore_files:
     - "main_part.py"
+    - "__main__.py"
+    - "__init__.py"
