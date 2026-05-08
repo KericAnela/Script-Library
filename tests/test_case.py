@@ -1,5 +1,6 @@
 import os
 import pytest
+from src.scanner import scan_directory
 
 def test_scanner_ignores_init_and_finds_scripts(tmp_path):
     test_dir = tmp_path / "my_scripts"
@@ -11,7 +12,6 @@ def test_scanner_ignores_init_and_finds_scripts(tmp_path):
     init_file = test_dir / "__init__.py"
     init_file.write_text("# This is a package file, not a runnable script")
 
-    from src.scanner import scan_directory
     found_scripts = scan_directory(str(test_dir))
 
     assert len(found_scripts) == 1, f"Expected 1 script, but found: {found_scripts}"
