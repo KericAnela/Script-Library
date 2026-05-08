@@ -1,0 +1,23 @@
+search:
+  extensions:
+    - .py
+    - .pyw
+    - .ipynb
+  ignore_folders:
+    - .git
+    - __pycache__
+    - .venv
+    - env
+    - venv
+    - node_modules
+    - site-packages
+    - AppData
+    - Library
+    - .local
+    - bin
+    - include
+    - .ipynb_checkpoints
+  ignore_files:
+    - "main_part.py"
+    - "__main__.py"
+    - "__init__.py"
