@@ -1,6 +1,4 @@
 # Script-Library
-A simple Python script for searching other scripts.
+A lightweight Python utility designed to help you search across your local scripts and codebases. You can easily customize your search scope by adding or removing directories and files in the config.yaml file. 
 
-To edit the files and folders you do or don't want to see, you can edit the config.yaml file. Just add or remove the name of the file or folder, and you're good to go. This will be a lot easier in the future to edit, though.
-
-Note: Everything in this script is always subject to change.
+Please note that this project is actively evolving, so features and configurations are subject to change as improvements are rolled out.
