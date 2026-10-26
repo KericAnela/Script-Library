@@ -5,12 +5,14 @@ import os
 import yaml
 import sys
 
+# Clears the terminal screen based on the host operating system
 def clear_screen():
     if os.name == 'nt':
         subprocess.run("cls", shell=True)
     else:
         subprocess.run("clear", shell=True)
 
+# Prompts the user to select the root scope/directory for scanning scripts
 def get_target_directory():
     while True:
         print("Directory Selection:")
@@ -46,6 +48,7 @@ def get_target_directory():
             clear_screen()
             print("Invalid selection. Please enter 1, 2, or 3.")
 
+# Loads configuration rules from config.yaml, falling back to safe defaults if missing
 def load_config():
     config_path = Path(__file__).parent / "config.yaml"
     if not config_path.exists():
@@ -60,6 +63,7 @@ def load_config():
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
+# Recursively walks through directories to locate matching script files using configuration rules
 def find_python_scripts(base_path, config):
     try:
         search_cfg = config.get("search", {})
@@ -72,6 +76,7 @@ def find_python_scripts(base_path, config):
         print("Scanning, this may take a moment...")
 
         for root, dirs, files in os.walk(str(base_path)):
+            # Mutate dirs in-place to prune hidden or ignored directories from traversal
             dirs[:] = [d for d in dirs if d not in ignore_folders and not d.startswith('.')]
 
             for file in files:
@@ -79,6 +84,7 @@ def find_python_scripts(base_path, config):
                     full_path = Path(root) / file
                     found_files.append(full_path)
 
+                # Provide live progress feedback to the console
                 if len(found_files) % 50 == 0:
                     sys.stdout.write(f"\rFound {len(found_files)} scripts so far...")
                     sys.stdout.flush()
@@ -94,6 +100,7 @@ def find_python_scripts(base_path, config):
     except OSError as e:
         print(f"System error accessing {base_path}: {e}")
 
+# Cross-platform utility to spawn and execute a selected script in a new terminal window
 def launch_script(selected_script):
     script_path = str(selected_script.absolute())
     script_dir = str(selected_script.parent)
@@ -109,6 +116,7 @@ def launch_script(selected_script):
     else:
         subprocess.Popen(['x-terminal-emulator', '-e', 'python3', script_path], cwd=script_dir)
 
+# Main orchestrator controlling execution flow, user selection, and error boundaries
 def main():
     clear_screen()
 
