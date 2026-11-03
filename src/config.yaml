@@ -18,6 +18,6 @@ search:
     - include
     - .ipynb_checkpoints
   ignore_files:
-    - "main_part.py"
+    - "main.py"
     - "__main__.py"
     - "__init__.py"
